@@ -1,0 +1,56 @@
+plugins {
+  id 'java'
+  id 'maven'
+  id 'checkstyle'
+}
+
+group 'uk.gov.hmcts.reform'
+version '1.1.0'
+
+checkstyle.toolVersion = '7.2'
+checkstyle.configFile = new File(rootDir, "checkstyle.xml")
+
+// make build fail on Checkstyle issues (https://github.com/gradle/gradle/issues/881)
+tasks.withType(Checkstyle).each { checkstyleTask ->
+  checkstyleTask.doLast {
+    reports.all { report ->
+      def outputFile = report.destination
+      if (outputFile.exists() && outputFile.text.contains("<error ")) {
+        throw new GradleException("There were checkstyle warnings! For more info check $outputFile")
+      }
+    }
+  }
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+  maven {
+    url 'http://artifactory.reform.hmcts.net/artifactory/libs-release'
+  }
+  jcenter() // fallback if artifactory is unavailable
+  mavenLocal()
+}
+
+jar {
+  manifest {
+    attributes 'Implementation-Title': project.name, 'Implementation-Version': project.version
+  }
+}
+
+task printVersion {
+  doLast {
+    print project.version
+  }
+}
+
+def springBootVersion = '1.5.3.RELEASE'
+
+dependencies {
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.18'
+  compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: springBootVersion
+  testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.16.1'
+  testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
+  testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.10'
+
+}
