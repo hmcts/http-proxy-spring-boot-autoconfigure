@@ -1,7 +1,10 @@
 plugins {
   id 'java'
   id 'maven'
+  id 'maven-publish'
   id 'checkstyle'
+  id 'java-library'
+  id "com.jfrog.bintray" version "1.7.3"
 }
 
 group 'uk.gov.hmcts.reform'
@@ -41,6 +44,34 @@ jar {
 task printVersion {
   doLast {
     print project.version
+  }
+}
+
+publishing {
+  publications {
+    Main(MavenPublication) {
+      from components.java
+      groupId project.group
+      artifactId 'http-proxy-spring-boot-autoconfigure'
+      version project.version
+    }
+  }
+}
+
+bintray {
+  user = System.getenv('BINTRAY_USER')
+  key = System.getenv('BINTRAY_KEY')
+  publications = ['Main']
+  publish = true
+  pkg {
+    repo = 'hmcts-maven'
+    name = 'http-proxy-spring-boot-autoconfigure'
+    userOrg = 'hmcts'
+    licenses = ['MIT']
+    vcsUrl = 'https://github.com/hmcts/http-proxy-spring-boot-autoconfigure'
+    version {
+      name = project.version
+    }
   }
 }
 
