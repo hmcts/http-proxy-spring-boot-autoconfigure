@@ -4,11 +4,13 @@ plugins {
   id 'maven-publish'
   id 'checkstyle'
   id 'java-library'
-  id "com.jfrog.bintray" version "1.7.3"
+  id "com.jfrog.bintray" version "1.8.0"
+  id 'org.owasp.dependencycheck' version '3.1.2'
+  id 'com.github.ben-manes.versions' version '0.17.0'
 }
 
-group 'uk.gov.hmcts.reform'
-version '1.1.0'
+group = 'uk.gov.hmcts.reform'
+version = '1.1.0'
 
 checkstyle.toolVersion = '7.2'
 checkstyle.configFile = new File(rootDir, "checkstyle.xml")
@@ -27,9 +29,29 @@ tasks.withType(Checkstyle).each { checkstyleTask ->
 
 sourceCompatibility = 1.8
 
+dependencyUpdates.resolutionStrategy = {
+  componentSelection { rules ->
+    rules.all { ComponentSelection selection ->
+      boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+        selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+      }
+      if (rejected) {
+        selection.reject('Release candidate')
+      }
+    }
+  }
+}
+
+// https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
+dependencyCheck {
+  // Specifies if the build should be failed if a CVSS score above a specified level is identified.
+  // range of 0-10 fails the build, anything greater and it doesn't fail the build
+  failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
+}
+
 repositories {
   maven {
-    url 'http://artifactory.reform.hmcts.net/artifactory/libs-release'
+    url = 'http://artifactory.reform.hmcts.net/artifactory/libs-release'
   }
   jcenter() // fallback if artifactory is unavailable
   mavenLocal()
@@ -53,7 +75,7 @@ publishing {
       from components.java
       groupId project.group
       artifactId 'http-proxy-spring-boot-autoconfigure'
-      version project.version
+      version = project.version
     }
   }
 }
@@ -75,13 +97,13 @@ bintray {
   }
 }
 
-def springBootVersion = '1.5.3.RELEASE'
+def springBootVersion = '2.0.1.RELEASE'
 
 dependencies {
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.18'
-  compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: springBootVersion
-  testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.16.1'
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+  compileOnly group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: springBootVersion
+
+  testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.17.1'
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
-  testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.10'
 
 }
