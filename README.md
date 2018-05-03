@@ -26,14 +26,14 @@ Maven:
 <dependency>
     <groupId>uk.gov.hmcts.reform</groupId>
     <artifactId>http-proxy-spring-boot-autoconfigure</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile group: 'uk.gov.hmcts.reform', name: 'http-proxy-spring-boot-autoconfigure', version: '1.0.0'
+compile group: 'uk.gov.hmcts.reform', name: 'http-proxy-spring-boot-autoconfigure', version: '2.0.0'
 ```
 
 ## Development guide
